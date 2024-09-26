@@ -4,6 +4,7 @@ import './TaskList.css';
 import UserSelect from '../TaskSelectUser/TaskSelectUser';
 import { TaskService } from '../../service/TaskService';
 import { TaskProps } from '../../types/Task.type';
+import { TasksContainer, TasksList, ListTitle, ButtonContainer } from './TaskListStyle';
 
 const TaskList: React.FC = () => {
     const [tasks, setTasks] = useState<TaskProps[]>([]);
@@ -14,7 +15,7 @@ const TaskList: React.FC = () => {
         const fetchTasks = async () => {
             const tasks = await TaskService.loadTasks();
             setTasks(tasks);
-            setFilterTasks(tasks); 
+            setFilterTasks(tasks);
         };
         fetchTasks();
     }, []);
@@ -23,17 +24,17 @@ const TaskList: React.FC = () => {
         if (userId === null) {
             setFilterTasks(tasks);
         } else {
-            setFilterTasks(tasks.filter(task => task.userId === userId)); 
+            setFilterTasks(tasks.filter(task => task.userId === userId));
         }
     };
 
     const handleUserChange = (userId: number | null) => {
-        setSelectedUserId(userId); 
+        setSelectedUserId(userId);
         filterTasksByUser(userId);
     };
 
-    
-    
+
+
 
     const deleteTask = async (id: number) => {
         try {
@@ -51,17 +52,17 @@ const TaskList: React.FC = () => {
             }
             return task;
         });
-    
+
         setTasks(updatedTasks);
-        
+
         if (selectedUserId) {
             setFilterTasks(updatedTasks.filter(task => task.userId === selectedUserId));
         } else {
             setFilterTasks(updatedTasks); // Если "All users", показываем все задачи
         }
     };
-    
-    
+
+
 
     const deleteMarks = async () => {
         const tasksToDelete = tasks.filter(task => task.completed && (!selectedUserId || task.userId === selectedUserId));
@@ -74,102 +75,102 @@ const TaskList: React.FC = () => {
             console.error('Error deleting tasks:', error);
         }
     };
-    
-    
+
+
 
     const toggleTask = (id: number) => {
         const updatedTasks = tasks.map(task => {
             if (task.id === id) {
-                return { ...task, completed: !task.completed }; 
+                return { ...task, completed: !task.completed };
             }
-            return task; 
+            return task;
         });
         setTasks(updatedTasks);
         setFilterTasks(updatedTasks);
     };
-    
+
     const addTask = async (title: string) => {
         if (!title.trim()) {
-            return; 
+            return;
         }
-    
+
         const maxId = tasks.length > 0 ? Math.max(...tasks.map(task => task.id)) : 0;
-    
+
         try {
             const newTask = {
                 id: maxId + 1,
                 title,
                 completed: false,
-                userId: selectedUserId || 1, 
-                onToggle: toggleTask, 
-                onDelete: deleteTask, 
+                userId: selectedUserId || 1,
+                onToggle: toggleTask,
+                onDelete: deleteTask,
                 onEdit: updateTask,
             };
 
             await TaskService.addTask(newTask.title, newTask.userId);
-    
+
             setTasks(prevState => [...prevState, newTask]);
             setFilterTasks(prevState => [...prevState, newTask]);
         } catch (error) {
             console.error("Error adding task", error);
         }
     }
-    
+
 
     const handleAddTask = () => {
         const title = prompt("Enter a title");
-        if(title){
+        if (title) {
             addTask(title)
         }
     }
 
-    const updateTask = async(id:number, title: string) => {
+    const updateTask = async (id: number, title: string) => {
         const taskToUpdate = tasks.find(task => task.id === id);
 
-        if(!taskToUpdate){
+        if (!taskToUpdate) {
             return;
         }
 
-        try{
+        try {
             const updatedTasks = await TaskService.updateTask(id, title, taskToUpdate.completed, taskToUpdate.userId);
             setTasks(prevState => prevState.map(tasks => tasks.id === id ? updatedTasks : tasks));
             setFilterTasks(prevState => prevState.map(tasks => tasks.id === id ? updatedTasks : tasks));
-        }catch(error){
+        } catch (error) {
             console.error("Error update", error)
         }
     }
 
-        const userIds = Array.from(new Set(tasks.map(task => task.userId)));
+    const userIds = Array.from(new Set(tasks.map(task => task.userId)));
 
-        return (
-            <div className="tasks">
-                <h1 className="list-title">Tasks List</h1>
-                <div className="buttons-container">
-                    <button className="add-button" onClick={handleAddTask}>Add task</button>
-                    <button className="mark-button" onClick={markAllTasks}>Mark all</button>
-                    <button className="delete-button" onClick={deleteMarks}>Delete completed</button>
-                    <UserSelect 
-                        userIds={userIds} 
-                        selectedUserId={selectedUserId} 
-                        onUserChange={handleUserChange} 
+    return (
+        <TasksContainer>
+            <ListTitle>Tasks List</ListTitle>
+            <ButtonContainer>
+                <button className="add-button" onClick={handleAddTask}>Add task</button>
+                <button className="mark-button" onClick={markAllTasks}>Mark all</button>
+                <button className="delete-button" onClick={deleteMarks}>Delete completed</button>
+                <UserSelect
+                    userIds={userIds}
+                    selectedUserId={selectedUserId}
+                    onUserChange={handleUserChange}
+                />
+            </ButtonContainer>
+            <TasksList>
+                {filterTasks.map(task => (
+                    <Task
+                        key={task.id}
+                        title={task.title}
+                        id={task.id}
+                        completed={task.completed}
+                        userId={task.userId}
+                        onDelete={deleteTask}
+                        onToggle={toggleTask}
+                        onEdit={updateTask}
                     />
-                </div>
-                <ul className="tasks-list">
-                    {filterTasks.map(task => (
-                        <Task
-                            key={task.id}
-                            title={task.title}
-                            id={task.id}
-                            completed={task.completed}
-                            userId={task.userId}
-                            onDelete={deleteTask}
-                            onToggle={toggleTask}
-                            onEdit={updateTask}
-                        />
-                    ))}
-                </ul>
-            </div>
-        );
-    }
+                ))}
+            </TasksList>
+        </TasksContainer>
+    );
+}
 
 export default TaskList;

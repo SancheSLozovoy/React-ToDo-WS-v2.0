@@ -1,6 +1,7 @@
 import React from 'react';
 import './Task.css';
 import { TaskProps } from '../../types/Task.type';
+import { TaskContainer, TaskContent, TaskTitle, Checkbox, Button, ChangeButton, ButtonContainer } from './TaskStyle';
 
 const Task: React.FC<TaskProps> = ({ id, title, completed, onToggle, onDelete, onEdit }) => {
 
@@ -11,19 +12,17 @@ const Task: React.FC<TaskProps> = ({ id, title, completed, onToggle, onDelete, o
         }
     };
 
-    const titleClass = completed ? 'task-title completed' : 'task-title';
-
     return (
-        <div className="task-container">
-            <div className="task-content">
-                <span className={titleClass}>{title}</span>
-                <div className="button-container">
-                    <input type="checkbox" checked={completed} onChange={() => onToggle(id)} />
-                    <button onClick={() => onDelete(id)}>Delete</button>
-                    <button className="change-button" onClick={handleEdit}>Change</button>
-                </div>
-            </div>
-        </div>
+        <TaskContainer>
+            <TaskContent>
+            <TaskTitle completed={completed}>{title}</TaskTitle>
+                <ButtonContainer>
+                    <Checkbox type="checkbox" checked={completed} onChange={() => onToggle(id)} />
+                    <Button onClick={() => onDelete(id)}>Delete</Button>
+                    <ChangeButton className="change-button" onClick={handleEdit}>Change</ChangeButton>
+                </ButtonContainer>
+            </TaskContent>
+        </TaskContainer>
     );
 };
 
