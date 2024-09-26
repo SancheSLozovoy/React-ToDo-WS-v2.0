@@ -22,7 +22,8 @@ interface TaskListState {
 interface UserSelectProps {
     userIds: number[];
     selectedUserId: number | null;
-    onUserChange: (userId: number) => void;
+    onUserChange: (userId: number | null) => void; 
 }
+
 
 export type {TaskProps, TaskListState, TaskState, UserSelectProps}
