@@ -33,9 +33,6 @@ const TaskList: React.FC = () => {
         filterTasksByUser(userId);
     };
 
-
-
-
     const deleteTask = async (id: number) => {
         try {
             await TaskService.deleteTask(id);
@@ -45,6 +42,7 @@ const TaskList: React.FC = () => {
             console.error('Error deleting task:', error);
         }
     };
+
     const markAllTasks = () => {
         const updatedTasks = tasks.map(task => {
             if (!selectedUserId || task.userId === selectedUserId) {
@@ -58,26 +56,29 @@ const TaskList: React.FC = () => {
         if (selectedUserId) {
             setFilterTasks(updatedTasks.filter(task => task.userId === selectedUserId));
         } else {
-            setFilterTasks(updatedTasks); // Если "All users", показываем все задачи
+            setFilterTasks(updatedTasks);
         }
     };
-
-
 
     const deleteMarks = async () => {
         const tasksToDelete = tasks.filter(task => task.completed && (!selectedUserId || task.userId === selectedUserId));
         try {
             await Promise.all(tasksToDelete.map(task => TaskService.deleteTask(task.id)));
-            const remainingTasks = tasks.filter(task => !(task.completed && (!selectedUserId || task.userId === selectedUserId)))
-            setTasks(remainingTasks)
-            setFilterTasks(remainingTasks);
+            const remainingTasks = tasks.filter(task => !(task.completed && (!selectedUserId || task.userId === selectedUserId)));
+            
+            setTasks(remainingTasks);
+
+            if (selectedUserId) {
+                setFilterTasks(remainingTasks.filter(task => task.userId === selectedUserId));
+            } else {
+                setFilterTasks(remainingTasks);
+            }
         } catch (error) {
             console.error('Error deleting tasks:', error);
         }
     };
-
-
-
+    
+    
     const toggleTask = (id: number) => {
         const updatedTasks = tasks.map(task => {
             if (task.id === id) {
@@ -115,7 +116,6 @@ const TaskList: React.FC = () => {
             console.error("Error adding task", error);
         }
     }
-
 
     const handleAddTask = () => {
         const title = prompt("Enter a title");
